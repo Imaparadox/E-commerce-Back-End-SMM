@@ -11,15 +11,16 @@ router.get('/', (req, res) => {
     attributes: [
       'id',
       'category_name'
+      //Question
       [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE category.id = )')]
     ],
     // be sure to include its associated Products
     include: [
       {
-        model: Category,
+        model: Product,
         attributes: ['id', 'category_name'],
         include: {
-          model: Product,
+          model: ProductTag,
           attributes: ['username']
         }
       },
@@ -45,9 +46,24 @@ router.get('/:id', (req, res) => {
     attributes: [
       'id',
       'category_name',
-      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE)')]
-    ]
+      //Question
+      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE category.id = )')]
+    ],
     // be sure to include its associated Products
+    include: [
+      {
+        model: Product,
+        attributes: ['id', 'category_name'],
+        include: {
+          model: ProductTag,
+          attributes: ['username']
+        }
+      },
+      {
+        model: Product,
+        attributes: ['username']
+      }
+    ]
 
   })
   .then(dbPostData => {
@@ -65,11 +81,20 @@ router.get('/:id', (req, res) => {
 
 router.post('/', (req, res) => {
   // create a new category
+  Category.create({
+    title: req.body.title,
+    category_name: req.body
+  })
+  .then(dbPostData => res.json(dbPostData))
+  .catch(err => {
+    console.log(err);
+    res.status(500).json(err);
+  });
 });
 
 router.put('/:id', (req, res) => {
   // update a category by its `id` value
-  
+
 });
 
 router.delete('/:id', (req, res) => {
