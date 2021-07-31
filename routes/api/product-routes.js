@@ -46,9 +46,42 @@ router.get('/:id', (req, res) => {
   Product.findOne({
     where: {
       id: req.params.id
-    }
+    },
+    attributes: [
+      'id',
+      'product_name',
+      'price',
+      'stock',
+      'category_id',
+      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE category.id = )')]
+    ],
+    // be sure to include its associated Category and Tag data
+    include: [
+      {
+        model: Category,
+        attributes: ['id', 'category_name'],
+        include: {
+          model: ProductTag,
+          attributes: ['username']
+        }
+      },
+      {
+        model: Category,
+        attributes: ['username']
+      }
+    ]
   })
-  // be sure to include its associated Category and Tag data
+    .then(dbPostData => {
+      if (!dbPostData) {
+        res.status(404).json({ message: 'No post found with this id' });
+        return;
+      }
+      res.json(dbPostData);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
 // create new product

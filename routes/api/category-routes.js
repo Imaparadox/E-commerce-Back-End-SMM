@@ -4,33 +4,16 @@ const { Category, Product, ProductTag } = require('../../models');
 const { findAll } = require('../../models/Product');
 
 // The `/api/categories` endpoint???????????
-const apiEndpoint = require('../api/')
+
 router.get('/', (req, res) => {
   // find all categories
   Category.findAll({
-    attributes: [
-      'id',
-      'category_name'
-      //Question??????????
-      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE category.id = )')]
-    ],
     // be sure to include its associated Products
-    include: [
-      {
-        model: Product,
-        attributes: ['id', 'product_name', 'price', 'stock', 'category_id'],
-        include: {
-          model: ProductTag,
-          attributes: ['username']
-        }
-      },
-      {
-        model: Product,
-        attributes: ['username']
-      }
-    ]
+    include: [Product],
   })
-    .then(dbPostData => res.json(dbPostData))
+    .then(categories => {
+      res.json(categories)
+    })
     .catch(err => {
       console.log(err);
       res.status(500).json(err);
@@ -43,77 +26,43 @@ router.get('/:id', (req, res) => {
     where: {
       id: req.params.id
     },
-    attributes: [
-      'id',
-      'category_name',
-      //Question????????????
-      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE category.id = )')]
-    ],
     // be sure to include its associated Products
-    include: [
-      {
-        model: Product,
-        attributes: ['id', 'product_name', 'price', 'stock', 'category_id'],
-        include: {
-          model: ProductTag,
-          attributes: ['username']
-        }
-      },
-      {
-        model: Product,
-        attributes: ['username']
-      }
-    ]
-
+    include: [Product]
   })
-    .then(dbPostData => {
-      if (!dbPostData) {
-        res.status(404).json({ message: 'No post found with this id' });
-        return;
-      }
-      res.json(dbPostData);
+    .then(category => {
+      res.json(category)
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json(err);
-    });
+      res.status(400).json(err)
+    })
 });
 
 router.post('/', (req, res) => {
   // create a new category
-  Category.create({
-    title: req.body.title,
-    category_name: req.body
-  })
-    .then(dbPostData => res.json(dbPostData))
+  Category.create(req.body)
+    .then(category => {
+      res.status(200).json(category)
+    })
     .catch(err => {
       console.log(err);
-      res.status(500).json(err);
+      res.status(400).json(err);
     });
 });
 
 router.put('/:id', (req, res) => {
   // update a category by its `id` value
-  Category.update(
-    {
-      title: req.body.title
+  Category.update(req.body, {
+    where: {
+      id: req.params.id,
     },
-    {
-      where: {
-        id: req.params.id
-      }
-    }
-  )
-    .then(dbPostData => {
-      if (!dbPostData) {
-        res.status(404).json({ message: 'No post found with this id' });
-        return;
-      }
-      res.json(dbPostData);
+  })
+    .then(category => {
+      res.status(200).json(category);
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json(err);
+      res.status(400).json(err);
     });
 });
 
@@ -125,16 +74,12 @@ router.delete('/:id', (req, res) => {
       id: req.params.id
     }
   })
-    .then(dbPostData => {
-      if (!dbPostData) {
-        res.status(404).json({ message: 'No post found with this id' });
-        return;
-      }
-      res.json(dbPostData);
+    .then(category => {
+      res.status(200).json(category);
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json(err);
+      res.status(400).json(err);
     });
 });
 
