@@ -8,32 +8,16 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', (req, res) => {
   // find all products
   Product.findAll({
-    attributes: [
-      'id',
-      'product_name',
-      'price',
-      'stock',
-      'category_id',
-      // WTH??????????
-      [sequelize.literal('(SELECT COUNT(*) FROM category WHERE')]
-    ],
     // be sure to include its associated Category and Tag data
     include: [
+      Category,
       {
-        model: Category,
-        attributes: ['id', 'category_name'],
-        include: {
-          model: ProductTag,
-          attributes: ['username']
-        }
-      },
-      {
-        model: Category,
-        attributes: ['username']
+        model: Tag,
+        through: ProductTag
       }
     ]
   })
-    .then(dbPostData => res.json(dbPostData))
+    .then(products => res.json(products))
     .catch(err => {
       console.log(err);
       res.status(500).json(err);
@@ -47,41 +31,22 @@ router.get('/:id', (req, res) => {
     where: {
       id: req.params.id
     },
-    attributes: [
-      'id',
-      'product_name',
-      'price',
-      'stock',
-      'category_id',
-      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE category.id = )')]
-    ],
     // be sure to include its associated Category and Tag data
     include: [
+      Category,
       {
-        model: Category,
-        attributes: ['id', 'category_name'],
-        include: {
-          model: ProductTag,
-          attributes: ['username']
-        }
-      },
-      {
-        model: Category,
-        attributes: ['username']
+        model: Tag,
+        through: ProductTag
       }
     ]
   })
-    .then(dbPostData => {
-      if (!dbPostData) {
-        res.status(404).json({ message: 'No post found with this id' });
-        return;
-      }
-      res.json(dbPostData);
+    .then(category => {
+      res.json(category)
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json(err);
-    });
+      res.status(400).json(err)
+    })
 });
 
 // create new product
