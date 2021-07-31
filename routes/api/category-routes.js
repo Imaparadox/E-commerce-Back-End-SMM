@@ -1,9 +1,9 @@
 const router = require('express').Router();
 const sequelize = require('../../config/connection');
-const { Category, Product, ProductTag } = require('../../models');
+const { Category, Product} = require('../../models');
 const { findAll } = require('../../models/Product');
 
-// The `/api/categories` endpoint???????????
+// The `/api/categories` endpoint
 
 router.get('/', (req, res) => {
   // find all categories
